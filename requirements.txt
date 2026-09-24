@@ -1,2 +1,2 @@
 aiogram
-yt-dlp>=2026.0.0
+yt-dlp
