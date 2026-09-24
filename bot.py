@@ -5,17 +5,15 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
 from yt_dlp import YoutubeDL
 
-# Ваш токен вже вставлено сюди
 TOKEN = "8362184916:AAGleP9hPrBxwzwbmvKg_7I1NhkozBjBqPA"
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
-# Регулярний вираз для пошуку будь-яких посилань
 URL_REGEX = re.compile(r'https?://[^\s]+')
 
 def download_media(url: str) -> str:
-    """Завантажує відео за допомогою yt-dlp та повертає шлях до файлу."""
+    """Завантажує відео за допомогою yt-dlp з налаштуваннями обходу захисту."""
     output_template = 'downloads/%(id)s.%(ext)s'
     os.makedirs('downloads', exist_ok=True)
     
@@ -24,6 +22,9 @@ def download_media(url: str) -> str:
         'outtmpl': output_template,
         'max_filesize': 50 * 1024 * 1024,
         'noplaylist': True,
+        # Додаємо параметри, щоб обійти блокування TikTok
+        'extractor_args': {'tiktok': {'webpage_download': True}},
+        'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     }
     
     with YoutubeDL(ydl_opts) as ydl:
@@ -49,7 +50,6 @@ async def handle_links(message: types.Message):
     
     url = match.group(0)
     
-    # Перевіряємо чи є посилання підтримуваним
     supported_keywords = ['tiktok.com', 'instagram.com', 'instagr.am', 'youtube.com', 'youtu.be', 'vt.tiktok.com']
     if not any(keyword in url for keyword in supported_keywords):
         return
